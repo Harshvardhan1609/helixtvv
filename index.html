@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>helixtv — Stream Everything You Love</title>
+  <meta name="description" content="helixtv is a Netflix‑style streaming UI clone built in a single HTML file with HTML, CSS, and JavaScript." />
+  <meta name="color-scheme" content="dark light">
+  <style>
+    /* =============================
+       HELIXTV — DESIGN SYSTEM
+       Single‑file Netflix clone (HTML+CSS+JS)
+       ============================= */
+    :root{
+      --bg:#0b0b0f;         /* page background */
+      --panel:#101215;      /* surfaces */
+      --text:#f2f4f7;       /* primary text */
+      --muted:#b3bcc7;      /* secondary text */
+      --accent:#e50914;     /* brand red */
+      --accent-600:#bf0a12; /* darker red */
+      --ring:rgba(229,9,20,.28);
+      --card:#151821;
+      --glass:rgba(0,0,0,.45);
+      --shadow:0 10px 30px rgba(0,0,0,.45);
+      --radius:16px;
+    }
+
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f7f8fb; --panel:#ffffff; --text:#0e1116; --muted:#475063;
+        --card:#ffffff; --glass:rgba(255,255,255,.45); --shadow:0 14px 34px rgba(20,25,40,.12);
+      }
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font:500 16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); color:var(--text);}
+    img{display:block;max-width:100%;}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    .container{width:min(1280px,92%);margin-inline:auto}
+
+    /* ============================= NAVBAR */
+    .site-header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(1.1) blur(10px);background:linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.2));}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0;}
+    .left, .right{display:flex;align-items:center;gap:18px}
+
+    /* Logo */
+    .logo{display:inline-flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.6px}
+    .logo-badge{width:30px;height:30px;border-radius:7px;background:radial-gradient(80% 80% at 25% 25%, #ff6068 0%, #e50914 40%, #7a0b10 100%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),0 6px 16px rgba(229,9,20,.35)}
+    .logo-text{font-size:20px}
+    .logo-text span{color:var(--accent)}
+
+    .nav a.link{color:#d4d9e2;opacity:.9}
+    .nav a.link:hover{opacity:1}
+
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#e8ecf2}
+    .pill input{background:transparent;color:inherit;border:none;outline:none;min-width:160px}
+    .icon{opacity:.9}
+
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:none;background:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(229,9,20,.35);cursor:pointer}
+    .btn:hover{background:var(--accent-600)}
+
+    /* ============================= HERO */
+    .hero{position:relative;min-height:68vh;display:grid;align-items:end;isolation:isolate}
+    .hero::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.6) 0%, rgba(0,0,0,.25) 35%, rgba(0,0,0,.55) 100%),
+      url('https://image.tmdb.org/t/p/original/rULWuutDcN5NvtiZi4FRPzRYWSh.jpg') center/cover no-repeat; /* K.O. poster-like */
+      filter:saturate(1.05) contrast(1.03);} 
+    .hero .content{position:relative;z-index:1;padding:12vh 0 8vh}
+    .kicker{color:#d1d5db;letter-spacing:.14em;text-transform:uppercase;font-weight:800;font-size:12px}
+    .title{font-size:clamp(32px,5vw,60px);line-height:1.05;margin:.25em 0 .35em;font-weight:900;max-width:16ch}
+    .subtitle{color:#e5e7eb;opacity:.9;max-width:45ch}
+
+    .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+    .email-box{display:flex;gap:8px;padding:8px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.12);border-radius:14px}
+    .email-box input{min-width:260px;padding:12px 14px;border-radius:10px;border:none;background:rgba(255,255,255,.06);color:#fff;outline:none}
+    .email-box input::placeholder{color:#c6cbd3}
+
+    /* ============================= ROWS (HORIZONTAL SCROLL) */
+    section.rows{padding:28px 0 10px;background:linear-gradient(180deg, rgba(0,0,0,.0), rgba(0,0,0,.35) 20%, transparent 100%)}
+    .row{margin:22px 0}
+    .row h3{margin:0 0 10px;font-size:22px}
+    .rail{position:relative}
+    .scroller{display:grid;grid-auto-flow:column;gap:10px;overflow:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
+    .scroller::-webkit-scrollbar{height:10px}
+    .scroller::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:10px}
+
+    .poster{position:relative;width:180px;aspect-ratio:2/3;border-radius:12px;overflow:hidden;scroll-snap-align:start;border:1px solid rgba(255,255,255,.08);box-shadow:var(--shadow);background:#111}
+    .poster img{width:100%;height:100%;object-fit:cover;transition:transform .25s ease}
+    .poster:hover img{transform:scale(1.06)}
+    .badge{position:absolute;top:8px;left:8px;background:var(--accent);color:#fff;font-weight:800;font-size:12px;padding:4px 8px;border-radius:999px}
+
+    .rail button.scroll{position:absolute;top:50%;transform:translateY(-50%);z-index:1;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.45);backdrop-filter:blur(6px);color:#fff;cursor:pointer;display:grid;place-items:center}
+    .rail button.prev{left:-8px}
+    .rail button.next{right:-8px}
+
+    /* ============================= FOOTER */
+    footer{padding:36px 0 56px;color:#b9c1cc;text-align:center}
+
+    /* ============================= MODAL / DETAILS */
+    .modal{position:fixed;inset:0;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);}
+    .modal.open{display:flex}
+    .sheet{position:relative;width:min(1100px,94%);border-radius:18px;overflow:hidden;background:var(--panel);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+    .sheet .heroBack{position:relative;height:46vh;background:#000}
+    .sheet .heroBack::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.6) 0%, rgba(0,0,0,.0) 35%, rgba(0,0,0,.6) 100%);}
+    .sheet .meta{position:absolute;inset:auto 0 0 0;padding:24px;background:linear-gradient(180deg, rgba(0,0,0,.0), rgba(0,0,0,.6));}
+    .sheet .meta h2{margin:0 0 8px;font-size:36px}
+    .chips{display:flex;gap:10px;flex-wrap:wrap;color:#e5e7eb;opacity:.85;margin-bottom:8px}
+    .actions{display:flex;gap:10px;margin-top:12px}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff}
+    .close-x{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;cursor:pointer}
+
+    /* Responsive */
+    @media(max-width:900px){
+      .left .links{display:none}
+      .poster{width:150px}
+    }
+  </style>
+</head>
+<body>
+  <!-- ============================= HEADER / NAVBAR -->
+  <header class="site-header">
+    <div class="container nav">
+      <div class="left">
+        <a class="logo" href="#" aria-label="helixtv home">
+          <span class="logo-badge" aria-hidden="true"></span>
+          <span class="logo-text"><span>helix</span>tv</span>
+        </a>
+        <nav class="links" aria-label="Primary">
+          <a class="link" href="#" data-section="trending">Trending</a>
+          <a class="link" href="#" data-section="new">New & Popular</a>
+          <a class="link" href="#" data-section="genres">Genres ▾</a>
+        </nav>
+      </div>
+      <div class="right">
+        <label class="pill" aria-label="Search">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="search" type="search" placeholder="Search" />
+        </label>
+        <label class="pill" aria-label="Language">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          EN
+        </label>
+        <a class="btn" href="#" id="signIn">Sign In</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================= HERO -->
+  <section class="hero">
+    <div class="container content">
+      <p class="kicker">Unlimited Movies • TV Shows • More</p>
+      <h1 class="title">Stream Everything You Love — Anytime, Anywhere.</h1>
+      <p class="subtitle">Ready to stream? Drop your email to get started.</p>
+      <div class="cta-row">
+        <div class="email-box">
+          <input id="email" type="email" placeholder="Email address" />
+          <button class="btn" id="getStarted">Get started</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= CONTENT ROWS -->
+  <main>
+    <section class="rows">
+      <div class="container">
+
+        <!-- Row: Featured Now -->
+        <div class="row" id="row-featured">
+          <h3>Featured Now</h3>
+          <div class="rail">
+            <button class="scroll prev" aria-label="Previous">◀</button>
+            <div class="scroller"></div>
+            <button class="scroll next" aria-label="Next">▶</button>
+          </div>
+        </div>
+
+        <!-- Row: Popular on helixtv -->
+        <div class="row" id="row-popular">
+          <h3>Popular on helixtv</h3>
+          <div class="rail">
+            <button class="scroll prev" aria-label="Previous">◀</button>
+            <div class="scroller"></div>
+            <button class="scroll next" aria-label="Next">▶</button>
+          </div>
+        </div>
+
+        <!-- Row: New & Trending -->
+        <div class="row" id="row-trending">
+          <h3>New & Trending</h3>
+          <div class="rail">
+            <button class="scroll prev" aria-label="Previous">◀</button>
+            <div class="scroller"></div>
+            <button class="scroll next" aria-label="Next">▶</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================= FOOTER -->
+  <footer>
+    <div class="container">
+      © <span id="year"></span> helixtv • This is a UI clone for educational/demo purposes.
+    </div>
+  </footer>
+
+  <!-- ============================= MODAL (DETAIL VIEW) -->
+  <div class="modal" id="detailModal" aria-hidden="true" role="dialog">
+    <div class="sheet" role="document">
+      <button class="close-x" id="closeDetail" aria-label="Close">✕</button>
+      <div class="heroBack" id="detailBackdrop"></div>
+      <div class="meta">
+        <div class="container">
+          <h2 id="detailTitle">Title</h2>
+          <div class="chips" id="detailChips">2025 • U/A 16+ • Drama</div>
+          <p id="detailOverview" style="max-width:60ch;opacity:.9"></p>
+          <div class="actions">
+            <button class="btn" id="watchBtn">▶ WATCH</button>
+            <button class="btn ghost" id="addBtn">＋ ADD LIST</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =============================
+       HELIXTV — APP SCRIPT (VANILLA JS)
+       - populates rows
+       - horizontal scroll buttons
+       - basic search filter
+       - detail modal
+       ============================= */
+
+    const TMDB = "https://image.tmdb.org/t/p/";
+    const SIZE = { poster: "w342", backdrop: "w1280" };
+
+    // Sample dataset (posters/backdrops are public TMDB CDN links)
+    const MOVIES = [
+      {id:1,title:"K.O.", year:2025, cert:"U/A 16+", genre:"Drama", overview:"He fights not just to win — but to survive. With every punch, the past comes back to haunt him.", poster:"/xwQ8r5nV4L7bq7tCj5ZrU0dK8mS.jpg", backdrop:"/rULWuutDcN5NvtiZi4FRPzRYWSh.jpg"},
+      {id:2,title:"Ginny & Georgia", year:2023, cert:"U/A 16+", genre:"Drama", overview:"Free‑spirited Georgia and her daughter Ginny navigate life, love, and secrets in a small town.", poster:"/qRzxSg6GJtq9x3nQe7S3zVdYy5b.jpg", backdrop:"/bWl1Z4rI0GZ8sQnQ3Uu7B9b5T2Q.jpg"},
+      {id:3,title:"Squid Game", year:2021, cert:"A", genre:"Thriller", overview:"Hundreds of cash‑strapped players accept a strange invitation to compete in children's games — with deadly stakes.", poster:"/dDlEmu3EZ0Pgg93K2SVNLCjCSvE.jpg", backdrop:"/iq5L971DFW1SwLJdvl7OpPI1QeZ.jpg"},
+      {id:4,title:"Venom: The Last Dance", year:2024, cert:"U/A 13+", genre:"Action", overview:"Eddie Brock and Venom face a desperate battle that will test the limits of their bond.", poster:"/aosm8NMQ3UyoBVpSxyimorCQykC.jpg", backdrop:"/aosm8NMQ3UyoBVpSxyimorCQykC.jpg"},
+      {id:5,title:"The Sandman", year:2022, cert:"U/A 16+", genre:"Fantasy", overview:"After years of imprisonment, Morpheus — the King of Dreams — embarks on a journey across worlds.", poster:"/q54qEgagGOYCq5D1903eBVMNkbo.jpg", backdrop:"/sR0SpCrXamlIkYMdfz83sFn5JS6.jpg"},
+      {id:6,title:"Animal", year:2023, cert:"A", genre:"Action", overview:"A violent father‑son saga of love, revenge, and redemption.", poster:"/tJfPjG7YQDdyCjTiMMeHnB2S7V2.jpg", backdrop:"/yDHYTfA3R0jFYba16jBB1ef8oIt.jpg"},
+      {id:7,title:"Kaulitz & Kaulitz", year:2024, cert:"U/A 13+", genre:"Docu", overview:"A candid look into the lives and careers of the Kaulitz brothers.", poster:"/8vY9cQvJ3UeB6n6q9Sg7O2YIhQf.jpg", backdrop:"/8vY9cQvJ3UeB6n6q9Sg7O2YIhQf.jpg"},
+      {id:8,title:"Chhava", year:2024, cert:"U/A 16+", genre:"Historical", overview:"Courage and legacy collide in this epic period drama.", poster:"/m1yE8c0dX1bYcN1D7wGcz0v1Abc.jpg", backdrop:"/m1yE8c0dX1bYcN1D7wGcz0v1Abc.jpg"}
+    ];
+
+    // Group movies into rows
+    const GROUPS = {
+      featured: [1,2,3,4,5,6,7,8],
+      popular:  [3,1,6,5,4,8,2,7],
+      trending: [6,4,3,2,1,7,5,8]
+    };
+
+    // Utilities
+    const el = (q,root=document)=>root.querySelector(q);
+    const els = (q,root=document)=>Array.from(root.querySelectorAll(q));
+
+    function makePoster(movie){
+      const div = document.createElement('figure');
+      div.className = 'poster';
+      div.tabIndex = 0;
+      div.setAttribute('role','button');
+      div.setAttribute('aria-label', movie.title + ' details');
+      div.dataset.id = movie.id;
+      div.innerHTML = `
+        <img loading="lazy" src="${TMDB+SIZE.poster+movie.poster}" alt="${movie.title} poster">
+        <span class="badge">N</span>
+      `;
+      // click -> open modal
+      div.addEventListener('click', ()=> openDetail(movie));
+      div.addEventListener('keydown', (e)=>{ if(e.key==='Enter') openDetail(movie) });
+      return div;
+    }
+
+    function populateRow(rowId, ids){
+      const row = document.getElementById('row-'+rowId);
+      const scroller = el('.scroller', row);
+      scroller.innerHTML = '';
+      ids.map(id=> MOVIES.find(m=>m.id===id)).forEach(m=> scroller.appendChild(makePoster(m)));
+      // attach arrows
+      const prev = el('.prev', row), next = el('.next', row);
+      prev.addEventListener('click', ()=> scroller.scrollBy({left:-600, behavior:'smooth'}));
+      next.addEventListener('click', ()=> scroller.scrollBy({left: 600, behavior:'smooth'}));
+    }
+
+    // Populate all rows
+    Object.entries(GROUPS).forEach(([key, list])=> populateRow(key, list));
+
+    // Year in footer
+    el('#year').textContent = new Date().getFullYear();
+
+    // Get started mini‑flow
+    el('#getStarted').addEventListener('click', ()=>{
+      const v = el('#email').value.trim();
+      if(!v || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){
+        alert('Please enter a valid email to continue.');
+        return;
+      }
+      alert('Welcome to helixtv! We\'ll ping '+v+' when your account is ready.');
+    });
+
+    // Simple search filter (filters posters by title)
+    el('#search').addEventListener('input', (e)=>{
+      const q = e.target.value.toLowerCase();
+      els('.row').forEach(row=>{
+        els('.poster', row).forEach(card=>{
+          const movie = MOVIES.find(m=> m.id === Number(card.dataset.id));
+          const visible = !q || movie.title.toLowerCase().includes(q);
+          card.style.display = visible ? '' : 'none';
+        })
+      })
+    });
+
+    // ============================= DETAIL MODAL
+    const modal = el('#detailModal');
+    const detailBackdrop = el('#detailBackdrop');
+    const detailTitle = el('#detailTitle');
+    const detailChips = el('#detailChips');
+    const detailOverview = el('#detailOverview');
+
+    function openDetail(movie){
+      // backdrop image
+      detailBackdrop.style.background = `center / cover no-repeat url('${TMDB+SIZE.backdrop+movie.backdrop}')`;
+      detailTitle.textContent = movie.title;
+      detailChips.textContent = `${movie.year} • ${movie.cert} • ${movie.genre}`;
+      detailOverview.textContent = movie.overview;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+    }
+
+    el('#closeDetail').addEventListener('click', closeDetail);
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeDetail(); });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.classList.contains('open')) closeDetail(); });
+
+    function closeDetail(){
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+    }
+
+    // Sign in stub
+    el('#signIn').addEventListener('click', (e)=>{ e.preventDefault(); alert('Demo UI — Sign in not implemented.'); });
+  </script>
+</body>
+</html>
